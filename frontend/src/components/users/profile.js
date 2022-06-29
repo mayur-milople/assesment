@@ -12,9 +12,11 @@ const Profile = () => {
     api
       .get(`auth/admin/user`)
       .then((res) => {
-        console.log("profile", res.data.data);
-        const data = res.data.data;
-        setUser(data);
+        console.log("profile", res);
+        if (res?.status === 200) {
+          const data = res?.data?.data;
+          setUser(data);
+        }
       })
       .catch((error) => {
         console.log(error);
@@ -43,6 +45,10 @@ const Profile = () => {
               <div>
                 <h1 style={{ fontWeight: "700" }}>Phone:</h1>
                 <p>{user.phone}</p>
+              </div>
+              <div>
+                <h1 style={{ fontWeight: "700" }}>SignIn:</h1>
+                <p>{user.signed_in_method}</p>
               </div>
             </div>
           </div>

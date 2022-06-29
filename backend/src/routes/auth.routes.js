@@ -7,7 +7,10 @@ const {
   updateUserProfile,
   updatePassword,
   getAllUsers,
-  googleandfblogin
+  googleandfblogin,
+  getSingleUser,
+  deleteUser,
+  getLoginUserInfo,
 } = require("../controllers/authController");
 const { isAuthenticatedUser } = require("../middleware/auth");
 
@@ -21,5 +24,8 @@ router.get("/admin/user", isAuthenticatedUser, getUserDetailsById);
 router.put("/admin/user/update", isAuthenticatedUser, updateUserProfile);
 router.put("/admin/password/update", isAuthenticatedUser, updatePassword);
 router.get("/admin/users", isAuthenticatedUser, getAllUsers);
+router.get("/admin/user/:id", isAuthenticatedUser, getSingleUser);
+// router.delete("/admin/user/delete/:id", isAuthenticatedUser, deleteUser);
+router.get("/admin/users/info", isAuthenticatedUser, getLoginUserInfo);
 
 module.exports = router;

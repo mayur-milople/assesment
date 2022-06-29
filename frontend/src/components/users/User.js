@@ -29,7 +29,7 @@ const User = () => {
     if (params.id) {
       getuserById();
     }
-  }, []);
+  }, [params.id]);
 
   console.log("user details", user);
 
@@ -50,6 +50,10 @@ const User = () => {
               <div>
                 <h1 style={{ fontWeight: "700" }}>Phone:</h1>
                 <p>{user.phone}</p>
+              </div>
+              <div>
+                <h1 style={{ fontWeight: "700" }}>SignIn:</h1>
+                <p>{user.signed_in_method}</p>
               </div>
             </div>
           </div>

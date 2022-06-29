@@ -8,6 +8,7 @@ import Sidebar from "./components/layout/Sidebar";
 import Navigation from "./components/layout/Navigation";
 import profile from "./components/users/profile";
 import User from "./components/users/User";
+import Dashboard from "./components/dashboard/Dashboard";
 
 const BaseRoute = () => {
   const ProtectedRoute = (props) => {
@@ -22,8 +23,6 @@ const BaseRoute = () => {
       />
     );
   };
-
-  // const path_join = ["/users/:username", "/users/:email"];
 
   return (
     <>
@@ -45,9 +44,10 @@ const BaseRoute = () => {
                 {/* <ProtectedRoute
                   exact
                   path="/users/:email"
-                  component={Userlist}
+                  component={Userlist}  
                 /> */}
                 <ProtectedRoute exact path="/profile" component={profile} />
+                <ProtectedRoute exact path="/dashboard" component={Dashboard} />
               </div>
             </div>
           </div>

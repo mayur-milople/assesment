@@ -12,7 +12,7 @@ const Userlist = () => {
   const { users } = useSelector((state) => state.users);
 
   const username = params.username;
-  const email = params.email;
+  // const email = params.email;
   // const phone = params.phone;
 
   useEffect(() => {
@@ -42,6 +42,9 @@ const Userlist = () => {
                   </th>
                   <th className="font-normal text-left pl-10">
                     <p className="border-r border-gray-400 w-1/2">Phone</p>
+                  </th>
+                  <th className="font-normal text-left pl-10">
+                    <p className="border-r border-gray-400 w-1/2">SignIn</p>
                   </th>
                   <th className="font-normal text-left w-32">
                     <p className="w-1/2">Actions</p>
@@ -74,6 +77,11 @@ const Userlist = () => {
                           </td>
                           <td>
                             <p className="mr-16 pl-10">{item.phone}</p>
+                          </td>
+                          <td>
+                            <p className="mr-16 pl-10">
+                              {item.signed_in_method}
+                            </p>
                           </td>
                           <td>
                             <p className="mr-16">

@@ -41,10 +41,11 @@ class ApiFeatures {
     removeFields.forEach((key) => delete queryCopy[key]);
 
     let queryStr = JSON.stringify(queryCopy);
+
     // replace with regex
     queryStr = queryStr.replace(/^[0-9]{10}$/g, (key) => `$${key}`);
 
-    // with uses price filter string to convert object
+    // with uses phone filter string to convert object
     this.query = this.query.find(JSON.parse(queryStr));
 
     return this;

@@ -3,6 +3,8 @@ const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 const ApiFeatures = require("../utils/apifeatures");
+const loginDetail = require("../models/loginDetailsModel");
+const moment = require("moment");
 
 exports.createUser = async (req, res) => {
   try {
@@ -91,6 +93,14 @@ exports.loginUser = async (req, res) => {
             httpOnly: true,
           });
 
+          // login details table data save
+          const userInfo = new loginDetail({
+            userId: login._id,
+            type: login.signed_in_method,
+            login_at: login.login_at,
+          });
+
+          await userInfo.save();
           return res.status(200).json({
             success: true,
             status: 200,
@@ -110,35 +120,39 @@ exports.loginUser = async (req, res) => {
   }
 };
 
-exports.googleandfblogin= async (req, res) => {
+exports.googleandfblogin = async (req, res) => {
   try {
-    const { username,type } = req.body;
+    const { username, email, type } = req.body;
 
-    if (!username || !type) {
+    if (!username || !type || !email) {
       return res.status(422).json({
         success: false,
         status: 422,
         message: "plz fill the field property",
       });
     } else {
-      const login = await user.findOne({ username,signed_in_method:type });
+      const login = await user.findOne({
+        username,
+        email,
+        signed_in_method: type,
+      });
 
-      //   console.log(login);
+      // console.log(login);
 
       if (!login) {
-
         const userData = new user({
-          username, 
-        //   email:username,
-        // password:username,         
-          signed_in_method:type,
+          username,
+          email,
+          //   email:username,
+          // password:username,
+          signed_in_method: type,
         });
-  
+
         userData.password = userData.generateHash(username);
-  
+
         const result = await userData.save();
         const login1 = await user.findOne({ username });
-  
+
         const isPasswordMatched = login1.validPassword(username);
 
         // console.log(isPasswordMatched);
@@ -341,4 +355,78 @@ exports.getAllUsers = async (req, res) => {
     data: users,
     message: "all users found",
   });
+};
+
+// Get single user (admin)
+exports.getSingleUser = async (req, res) => {
+  const userId = await user.findById(req.params.id);
+
+  if (!userId) {
+    res.status(404).json({
+      success: false,
+      status: 404,
+      message: `User does not exist with Id: ${req.params.id}`,
+    });
+    return;
+  } else {
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: userId,
+      message: "admin user details found",
+    });
+    return;
+  }
+};
+
+// exports.deleteUser = async (req, res) => {
+//   const userId = await user.findByIdAndDelete(req.params.id);
+//   if (!userId) {
+//     res.status(400).json({
+//       success: false,
+//       status: false,
+//       message: "User does not exist with Id: ${req.params.id}",
+//     });
+//     return;
+//   } else {
+//     res.status(200).json({
+//       success: true,
+//       status: 200,
+//       message: "user deleted successfully",
+//     });
+//     return;
+//   }
+// };
+
+exports.getLoginUserInfo = async (req, res) => {
+  var array = [];
+  var currentDate = new Date();
+  for (let index = 0; index < 11; index++) {
+    const date = moment(currentDate).subtract(index, "d").format("DD-MM-YYYY");
+    array.push(date);
+  }
+
+  console.log("start", array);
+
+  const userData = await loginDetail.find();
+
+  if (userData) {
+    const login_at = moment(userData.login_at).format("DD-MM-YYYY");
+
+    // for loop create to index pass
+
+    // for (let i = 0; i < 11; i++) {
+    //   const element = array.at(i);
+
+    //   console.log(element);
+    // }
+
+    if (array.at(0) === login_at) {
+      const userCount = await loginDetail.countDocuments();
+    }
+    if (array.at(1) === login_at) {
+      const userCount = await loginDetail.countDocuments();
+      // console.log(userCount);
+    }
+  }
 };

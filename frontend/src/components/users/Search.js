@@ -54,7 +54,7 @@ const Search = ({ history }) => {
                 </svg>
                 <form onSubmit={searchSubmitHandler}>
                   <input
-                    type="text"
+                    type="search"
                     className="py-2.5 pl-1 w-full focus:outline-none text-sm rounded text-gray-600 placeholder-gray-500"
                     placeholder="Filter users by name, email, phone...."
                     onChange={searchTag}

@@ -18,9 +18,11 @@ const Navigation = () => {
       .get("auth/admin/logout")
       .then((res) => {
         console.log("logout", res);
-        cookies.remove("access_token");
-        dispatch(setIsAuth(false));
-        history.push("/");
+        if (res?.status === 201) {
+          cookies.remove("access_token");
+          dispatch(setIsAuth(false));
+          history.push("/");
+        }
       })
       .catch((error) => {
         dispatch({ type: SHOW_TOAST, payload: error.message });

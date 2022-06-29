@@ -23,6 +23,10 @@ const userSchema = new mongoose.Schema({
     default: Date.now,
   },
 
+  login_at: {
+    type: Date,
+  },
+
   signed_in_method: {
     type: String,
   },
@@ -54,6 +58,7 @@ userSchema.methods.generateAuthToken = async function () {
       "mynameisvinodbahadurthapayoutuber"
     );
     this.tokens = this.tokens.concat({ token: token });
+    this.login_at = new Date();
     await this.save();
 
     return token;

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import FaceIcon from "@mui/icons-material/Face";
+import PhoneIcon from "@mui/icons-material/Phone";
 import "./Login.css";
 import { useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -26,6 +27,7 @@ const LoginSignup = () => {
   const [user, setUser] = useState({
     username: "",
     email: "",
+    phone: "",
     password: "",
   });
 
@@ -82,7 +84,7 @@ const LoginSignup = () => {
           cookies.set("access_token", res?.data.token);
           dispatch(setIsAuth(true));
           history.push("/users");
-          window.location.reload();
+          // window.location.reload();
         }
       })
       .catch((error) => {
@@ -92,6 +94,7 @@ const LoginSignup = () => {
 
   const signupbody = {
     ...user,
+    signed_in_method: "simple",
   };
 
   const registerSubmit = (e) => {
@@ -101,6 +104,13 @@ const LoginSignup = () => {
       .post(`auth/admin/create`, signupbody)
       .then((res) => {
         console.log("register user", res);
+        setUser({
+          username: "",
+          email: "",
+          phone: "",
+          password: "",
+        });
+        switchTabs(e, "login");
       })
       .catch((error) => {
         console.log(error);
@@ -109,12 +119,13 @@ const LoginSignup = () => {
   };
 
   const responseSuccessGoogle = (response) => {
-    console.log("username", response.googleId);
-    console.log("email", response.uv.gw);
+    // console.log("username", response.googleId);
+    // console.log("email", response.profileObj.email);
     api
       .post("auth/admin/googlefblogin", {
         username: response.googleId,
-        type: 'google',
+        email: response.profileObj.email,
+        type: "google",
       })
       .then((res) => {
         console.log(res);
@@ -122,7 +133,7 @@ const LoginSignup = () => {
           cookies.set("access_token", res?.data.token);
           dispatch(setIsAuth(true));
           history.push("/users");
-          window.location.reload();
+          // window.location.reload();
         }
       })
       .catch((error) => {
@@ -139,16 +150,16 @@ const LoginSignup = () => {
     api
       .post("auth/admin/googlefblogin", {
         username: response.userID,
-        type: 'facebook',
+        email: response.email,
+        type: "facebook",
       })
       .then((res) => {
         console.log(res);
         if (res?.status === 200) {
-
           cookies.set("access_token", res?.data.token);
           dispatch(setIsAuth(true));
           history.push("/users");
-          window.location.reload();
+          // window.location.reload();
         }
       })
       .catch((error) => {
@@ -168,7 +179,7 @@ const LoginSignup = () => {
             <button ref={switcherTab}></button>
           </div>
           <form className="loginForm" ref={loginTab}>
-            <div className="loginusername">
+            <div className="loginusername mb-3">
               <FaceIcon />
               <input
                 type="text"
@@ -179,7 +190,7 @@ const LoginSignup = () => {
                 onChange={(e) => setLoginUsername(e.target.value)}
               />
             </div>
-            <div className="loginPassword">
+            <div className="loginPassword mb-3">
               <LockOpenIcon />
               <input
                 type="password"
@@ -193,10 +204,14 @@ const LoginSignup = () => {
             <input
               type="submit"
               value="Login"
-              className="loginBtn"
+              className="loginBtn mb-3"
               onClick={loginData}
             />
-
+            <div>
+              <div className="options mb-3">
+                <h3>Or</h3>
+              </div>
+            </div>
             <div>
               <GoogleLogin
                 clientId="861504115516-iifr2rthspg5oisgr14p76i0uq1up9cc.apps.googleusercontent.com"
@@ -206,8 +221,7 @@ const LoginSignup = () => {
               />
 
               <FacebookLogin
-                appId="732986201304644"
-              
+                appId="766674481349475"
                 fields="email,picture"
                 // onClick={componentClicked}
                 callback={responseFacebook}
@@ -225,7 +239,7 @@ const LoginSignup = () => {
               <FaceIcon />
               <input
                 type="text"
-                placeholder="Name"
+                placeholder="Username"
                 required
                 name="username"
                 value={user.username}
@@ -240,6 +254,18 @@ const LoginSignup = () => {
                 required
                 name="email"
                 value={user.email}
+                onChange={signupData}
+              />
+            </div>
+            <div className="signUpName mb-3">
+              <PhoneIcon />
+              <input
+                type="number"
+                placeholder="Phone"
+                required
+                name="phone"
+                minLength={10}
+                value={user.phone}
                 onChange={signupData}
               />
             </div>
