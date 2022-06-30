@@ -171,6 +171,15 @@ exports.googleandfblogin = async (req, res) => {
             httpOnly: true,
           });
 
+          // login details table data save
+          const userInfo = new loginDetail({
+            userId: login1._id,
+            type: login1.signed_in_method,
+            login_at: login1.login_at,
+          });
+
+          await userInfo.save();
+
           return res.status(200).json({
             success: true,
             status: 200,
@@ -197,6 +206,15 @@ exports.googleandfblogin = async (req, res) => {
             expires: new Date(Date.now() + 30 * 24 * 3600 * 10000),
             httpOnly: true,
           });
+
+          // login details table data save
+          const userInfo = new loginDetail({
+            userId: login._id,
+            type: login.signed_in_method,
+            login_at: login.login_at,
+          });
+
+          await userInfo.save();
 
           return res.status(200).json({
             success: true,
@@ -400,33 +418,147 @@ exports.getSingleUser = async (req, res) => {
 
 exports.getLoginUserInfo = async (req, res) => {
   var array = [];
+  var countRegisterSimpleArray = [];
+  var countRegisterSocialArray = [];
+  var countLoginSimpleArray = [];
+  var countLoginSocialArray = [];
+  var countTotalLogin = [];
   var currentDate = new Date();
   for (let index = 0; index < 11; index++) {
-    const date = moment(currentDate).subtract(index, "d").format("DD-MM-YYYY");
+    const date = moment(currentDate).subtract(index, "d").format("YYYY-MM-DD");
+    var loginSimpleResult = await loginDetail.aggregate([
+      {
+        $addFields: {
+          onlyDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$login_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          onlyDate: {
+            $eq: date,
+          },
+          type: "simple",
+        },
+      },
+    ]);
+
+    var loginResult = await loginDetail.aggregate([
+      {
+        $addFields: {
+          onlyDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$login_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          onlyDate: {
+            $eq: date,
+          },
+          $or: [{ type: "google" }, { type: "facebook" }, { type: "simple" }],
+        },
+      },
+    ]);
+
+    var loginSocialResult = await loginDetail.aggregate([
+      {
+        $addFields: {
+          onlyDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$login_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          onlyDate: {
+            $eq: date,
+          },
+          $or: [{ type: "google" }, { type: "facebook" }],
+        },
+      },
+    ]);
+
+    var registerResultSimple = await user.aggregate([
+      {
+        $addFields: {
+          onlyDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$registered_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          onlyDate: {
+            $eq: date,
+          },
+          signed_in_method: "simple",
+        },
+      },
+    ]);
+
+    var registerResultSocial = await user.aggregate([
+      {
+        $addFields: {
+          onlyDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$registered_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          onlyDate: {
+            $eq: date,
+          },
+
+          $or: [
+            { signed_in_method: "google" },
+            { signed_in_method: "facebook" },
+          ],
+        },
+      },
+    ]);
     array.push(date);
+
+    // console.log("register", registerResultSocial);
+
+    countRegisterSimpleArray.push(registerResultSimple.length);
+    countRegisterSocialArray.push(registerResultSocial.length);
+    countLoginSimpleArray.push(loginSimpleResult.length);
+    countLoginSocialArray.push(loginSocialResult.length);
+    countTotalLogin.push(loginResult.length);
   }
 
-  console.log("start", array);
+  var simpleRegister = { array, countRegisterSimpleArray };
+  var socialRegister = { array, countRegisterSocialArray };
+  var simpleLogin = { array, countLoginSimpleArray };
+  var socialLogin = { array, countLoginSocialArray };
+  var totalLogin = { array, countTotalLogin };
 
-  const userData = await loginDetail.find();
-
-  if (userData) {
-    const login_at = moment(userData.login_at).format("DD-MM-YYYY");
-
-    // for loop create to index pass
-
-    // for (let i = 0; i < 11; i++) {
-    //   const element = array.at(i);
-
-    //   console.log(element);
-    // }
-
-    if (array.at(0) === login_at) {
-      const userCount = await loginDetail.countDocuments();
-    }
-    if (array.at(1) === login_at) {
-      const userCount = await loginDetail.countDocuments();
-      // console.log(userCount);
-    }
-  }
+  return res.status(200).json({
+    success: true,
+    status: 200,
+    data: {
+      simple: { simpleRegister, simpleLogin },
+      social: { socialRegister, socialLogin },
+      total: { totalLogin },
+    },
+    message: "request success",
+  });
 };

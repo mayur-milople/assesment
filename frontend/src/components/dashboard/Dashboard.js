@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,6 +11,9 @@ import {
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 import { Card } from "@mui/material";
+import { api } from "../helper/instance";
+import { useDispatch } from "react-redux";
+import { SHOW_TOAST } from "../store/constants/constant";
 
 ChartJS.register(
   CategoryScale,
@@ -22,92 +25,112 @@ ChartJS.register(
   Legend
 );
 
-export const options1 = {
-  responsive: true,
-  plugins: {
-    legend: {
-      position: "top",
-    },
-    title: {
-      display: true,
-      text: "Chart.js Line Chart",
-    },
-  },
-};
-
-const labels1 = ["1-1-2022", "2-1-2022", "3-1-2022", "4-1-2022", "5-1-2022"];
-
-export const data1 = {
-  labels: labels1,
-  datasets: [
-    {
-      label: "simple login",
-      data: [1, 2, 3, 4, 5],
-      borderColor: "rgb(255, 99, 132)",
-      backgroundColor: "rgba(255, 99, 132, 0.5)",
-    },
-  ],
-};
-
-export const options2 = {
-  responsive: true,
-  plugins: {
-    legend: {
-      position: "top",
-    },
-    title: {
-      display: true,
-      text: "Chart.js Line Chart",
-    },
-  },
-};
-
-const labels2 = ["1-1-2022", "2-1-2022", "3-1-2022", "4-1-2022", "5-1-2022"];
-
-const data2 = {
-  labels: labels2,
-  datasets: [
-    {
-      label: "google login",
-      data: [1, 2, 3, 4, 5],
-      borderColor: "rgb(53, 162, 235)",
-      backgroundColor: "rgba(53, 162, 235, 0.5)",
-    },
-  ],
-};
-
-export const options3 = {
-  responsive: true,
-  plugins: {
-    legend: {
-      position: "top",
-    },
-    title: {
-      display: true,
-      text: "Chart.js Line Chart",
-    },
-  },
-};
-
-const labels3 = ["1-1-2022", "2-1-2022", "3-1-2022", "4-1-2022", "5-1-2022"];
-
-const data3 = {
-  labels: labels3,
-  datasets: [
-    {
-      label: "fblogin",
-      data: [1, 2, 3, 4, 5],
-      borderColor: "rgb(255, 99, 132)",
-      backgroundColor: "rgba(255, 99, 132, 0.5)",
-    },
-  ],
-};
-
 const Dashboard = () => {
+  const [graphData, setGraphData] = useState({});
+  const dispatch = useDispatch();
+
+  const getGraphDetail = () => {
+    api
+      .get("auth/admin/users/info")
+      .then((res) => {
+        console.log("res", res.data.data);
+        const data = res.data.data;
+        setGraphData(data);
+      })
+      .catch((error) => {
+        dispatch({ type: SHOW_TOAST, payload: error.message });
+      });
+  };
+
+  useEffect(() => {
+    getGraphDetail();
+  }, []);
+
+  const dailyLoginoptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+      title: {
+        display: true,
+        text: "Chart.js Line Chart",
+      },
+    },
+  };
+  const dailyLogin = {
+    labels: graphData?.total?.totalLogin?.array,
+    datasets: [
+      {
+        label: "Daily login",
+        data: graphData?.total?.totalLogin?.countTotalLogin,
+        borderColor: "rgb(255, 99, 132)",
+        backgroundColor: "rgba(255, 99, 132, 0.5)",
+      },
+    ],
+  };
+
+  const dailyRegisteroptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+      title: {
+        display: true,
+        text: "Chart.js Line Chart",
+      },
+    },
+  };
+
+  const dailyRegister = {
+    labels: graphData?.simple?.simpleRegister?.array,
+    datasets: [
+      {
+        label: "Daily simple registration",
+        data: graphData?.simple?.simpleRegister?.countRegisterSimpleArray,
+        borderColor: "rgb(53, 162, 235)",
+        backgroundColor: "rgba(53, 162, 235, 0.5)",
+      },
+      {
+        label: "Daily social registration",
+        data: graphData?.social?.socialRegister?.countRegisterSocialArray,
+        borderColor: "rgb(255, 99, 132)",
+        backgroundColor: "rgba(255, 99, 132, 0.5)",
+      },
+    ],
+  };
+  const dailySocialLoginoptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+      title: {
+        display: true,
+        text: "Chart.js Line Chart",
+      },
+    },
+  };
+
+  const dailySocialLogin = {
+    labels: graphData?.social?.socialLogin?.array,
+    datasets: [
+      {
+        label: "Daily Social login",
+        data: graphData?.social?.socialLogin?.countLoginSocialArray,
+        borderColor: "rgb(53, 162, 235)",
+        backgroundColor: "rgba(53, 162, 235, 0.5)",
+      },
+    ],
+  };
+
+  console.log("graphData", graphData);
+
   return (
     <div className="container">
       <h1 className="text-center mb-3">Dashboard</h1>
-      <div class="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <Card
           variant="outlined"
           sx={{
@@ -119,7 +142,7 @@ const Dashboard = () => {
             flexDirection: "column",
           }}
         >
-          <Line options={options1} data={data1} />
+          <Line options={dailyLoginoptions} data={dailyLogin} />
         </Card>
 
         <Card
@@ -133,7 +156,7 @@ const Dashboard = () => {
             flexDirection: "column",
           }}
         >
-          <Line options={options2} data={data2} />
+          <Line options={dailySocialLoginoptions} data={dailySocialLogin} />
         </Card>
 
         <Card
@@ -147,7 +170,7 @@ const Dashboard = () => {
             flexDirection: "column",
           }}
         >
-          <Line options={options3} data={data3} />
+          <Line options={dailyRegisteroptions} data={dailyRegister} />
         </Card>
       </div>
     </div>
