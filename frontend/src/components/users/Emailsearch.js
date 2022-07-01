@@ -1,27 +1,46 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { getUser } from "../store/actions/userAction";
+import { useDispatch, useSelector } from "react-redux";
 
-const Search = ({ history }) => {
-  const [username, setUsername] = useState("");
-  //   const [email, setEmail] = useState("");
+const Emailsearch = ({ history }) => {
+  const [suggestions, setSuggestions] = useState([]);
+  const [email, setEmail] = useState("");
   //   const [phone, setPhone] = useState("");
+  const dispatch = useDispatch();
 
-  const searchTag = (e) => {
+  useEffect(() => {
+    dispatch(getUser());
+  }, [dispatch]);
+
+  const { users } = useSelector((state) => state.users);
+
+  // console.log("username", users);
+
+  const searchTag = (email) => {
+    let matches = [];
+    if (email.length > 0) {
+      matches = users.filter((user) => {
+        // console.log("user", user);
+        const regex = new RegExp(`${email}`, "gi");
+        return user.email.match(regex);
+      });
+    }
     // setEmail(e.target.value);
     // setPhone(e.target.value);
-    setUsername(e.target.value);
+    // console.log("matches", matches);
+    setSuggestions(matches);
+    setEmail(email);
   };
   const searchSubmitHandler = (e) => {
     e.preventDefault();
-    if (username) {
-      history.push(`/users/${username}`);
-    }
-    // if (email) {
-    //   history.push(`/users/${email}`);
-    // }
-    else {
+
+    if (email) {
+      history.push(`/users/${email}`);
+    } else {
       history.push("/users");
     }
   };
+
   return (
     <>
       <div className="py-4 md:py-7">
@@ -57,8 +76,13 @@ const Search = ({ history }) => {
                     type="search"
                     className="py-2.5 pl-1 w-full focus:outline-none text-sm rounded text-gray-600 placeholder-gray-500"
                     placeholder="Filter users by name, email, phone...."
-                    onChange={searchTag}
+                    onChange={(e) => searchTag(e.target.value)}
+                    value={email}
                   />
+                  {suggestions.length > 0 &&
+                    suggestions.map((suggestion, i) => (
+                      <div key={i}>{suggestion.email}</div>
+                    ))}
                 </form>
               </div>
             </div>
@@ -69,4 +93,4 @@ const Search = ({ history }) => {
   );
 };
 
-export default Search;
+export default Emailsearch;
