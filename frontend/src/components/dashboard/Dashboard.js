@@ -14,6 +14,7 @@ import { Card } from "@mui/material";
 import { api } from "../helper/instance";
 import { useDispatch } from "react-redux";
 import { SHOW_TOAST } from "../store/constants/constant";
+import moment from "moment";
 
 ChartJS.register(
   CategoryScale,
@@ -27,6 +28,7 @@ ChartJS.register(
 
 const Dashboard = () => {
   const [graphData, setGraphData] = useState({});
+
   const dispatch = useDispatch();
 
   const getGraphDetail = () => {
@@ -125,7 +127,7 @@ const Dashboard = () => {
     ],
   };
 
-  console.log("graphData", graphData);
+  // console.log("graphData", graphData);
 
   return (
     <div className="container">
@@ -143,6 +145,16 @@ const Dashboard = () => {
           }}
         >
           <Line options={dailyLoginoptions} data={dailyLogin} />
+
+          <div className="mt-4">
+            <span className="font-semibold mr-1">Start:</span>
+            <input type="date" name="currentDate" className="mr-8" />
+            <span className="font-semibold mr-1">End:</span>
+            <input type="date" className="mr-3" />
+            <button className="bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-2 px-2 border border-red-500 hover:border-transparent rounded">
+              filter
+            </button>
+          </div>
         </Card>
 
         <Card
@@ -157,6 +169,15 @@ const Dashboard = () => {
           }}
         >
           <Line options={dailySocialLoginoptions} data={dailySocialLogin} />
+          <div className="mt-4">
+            <span className="font-semibold mr-1">Start:</span>
+            <input type="date" className="mr-8" />
+            <span className="font-semibold mr-1">End:</span>
+            <input type="date" className="mr-3" />
+            <button className="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
+              filter
+            </button>
+          </div>
         </Card>
 
         <Card
@@ -171,6 +192,15 @@ const Dashboard = () => {
           }}
         >
           <Line options={dailyRegisteroptions} data={dailyRegister} />
+          <div className="mt-4">
+            <span className="font-semibold mr-1">Start:</span>
+            <input type="date" name="currentDate" className="mr-8" />
+            <span className="font-semibold mr-1">End:</span>
+            <input type="date" className="mr-3" />
+            <button className="bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-2 px-2 border border-red-500 hover:border-transparent rounded">
+              filter
+            </button>
+          </div>
         </Card>
       </div>
     </div>

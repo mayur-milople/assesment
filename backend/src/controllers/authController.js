@@ -562,3 +562,150 @@ exports.getLoginUserInfo = async (req, res) => {
     message: "request success",
   });
 };
+
+exports.searchUserDetails = async (req, res) => {
+  
+
+  const search = await user.find({
+    $or: [
+      { username: { $regex: req.params.key } },
+      { email: { $regex: req.params.key } },
+    ],
+  });
+
+  if (search) {
+    return res.status(200).json({
+      success: true,
+      status: 200,
+      data: search,
+      message: "user found",
+    });
+  } else {
+    return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "user not found",
+    });
+  }
+};
+
+exports.registerDateFilter = async (req, res) => {
+  const sDate = new Date(req.body.sdate);
+
+  const startDate = moment(sDate).format("YYYY-MM-DD");
+
+  const eDate = new Date(req.body.edate);
+
+  const endDate = moment(eDate).format("YYYY-MM-DD");
+
+  var registerSimpleResult = await user.aggregate([
+    {
+      $addFields: {
+        registerDate: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$registered_at",
+          },
+        },
+      },
+    },
+    {
+      $match: {
+        registerDate: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+        signed_in_method: "simple",
+      },
+    },
+  ]);
+
+  var registerResultSocial = await user.aggregate([
+    {
+      $addFields: {
+        registerDate: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$registered_at",
+          },
+        },
+      },
+    },
+    {
+      $match: {
+        registerDate: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+        $or: [{ signed_in_method: "google" }, { signed_in_method: "facebook" }],
+      },
+    },
+  ]);
+
+  return res.status(200).json({
+    success: true,
+    status: 200,
+    data: { registerSimpleResult, registerResultSocial },
+    message: "all register date filter found",
+  });
+};
+
+exports.loginDateFilter = async (req, res) => {
+  const sDate = new Date(req.body.sdate);
+
+  const startDate = moment(sDate).format("YYYY-MM-DD");
+
+  const eDate = new Date(req.body.edate);
+
+  const endDate = moment(eDate).format("YYYY-MM-DD");
+
+  var loginResult = await loginDetail.aggregate([
+    {
+      $addFields: {
+        loginDate: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$login_at",
+          },
+        },
+      },
+    },
+    {
+      $match: {
+        loginDate: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+      },
+    },
+  ]);
+
+  var loginSocialResult = await loginDetail.aggregate([
+    {
+      $addFields: {
+        loginDate: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$login_at",
+          },
+        },
+      },
+    },
+    {
+      $match: {
+        loginDate: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+        $or: [{ type: "google" }, { type: "facebook" }],
+      },
+    },
+  ]);
+
+  return res.status(200).json({
+    success: true,
+    status: 200,
+    data: { loginResult, loginSocialResult },
+    message: "all login date filter found",
+  });
+};

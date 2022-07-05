@@ -37,17 +37,6 @@ const BaseRoute = () => {
                 <ProtectedRoute exact path="/users" component={Userlist} />
                 <ProtectedRoute exact path="/users/view/:id" component={User} />
 
-                <ProtectedRoute
-                  exact
-                  path="/users/:username"
-                  component={Userlist}
-                />
-                {/* <ProtectedRoute
-                  exact
-                  path="/users/:email"
-                  component={Userlist}
-                /> */}
-
                 <ProtectedRoute exact path="/profile" component={profile} />
                 <ProtectedRoute exact path="/dashboard" component={Dashboard} />
               </div>

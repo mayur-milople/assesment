@@ -11,7 +11,7 @@ const Sidebar = () => {
         <div className="h-16 w-full flex items-center px-8">
           <h1 className="tetx-2xl text-white">Admin Panel</h1>
         </div>
-        <ul aria-orientation="vertical" className=" py-6">
+        <ul aria-orientation="vertical" className="py-6">
           <li className="pl-6 cursor-pointer text-white text-sm leading-3 tracking-normal pb-4 pt-5 focus:outline-none">
             <div className="flex items-center">
               <div>
@@ -256,10 +256,10 @@ const Sidebar = () => {
                   </div>
                   <ul className="flex">
                     <li className="cursor-pointer text-white pt-5 pb-3">
-                      <a href="#">profile</a>
+                      <Link to="/profile">profile</Link>
                     </li>
                     <li className="cursor-pointer text-white pt-5 pb-3 pl-3">
-                      <a href="#">Logout</a>
+                      <span>Logout</span>
                     </li>
                   </ul>
                 </div>

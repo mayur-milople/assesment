@@ -3,3 +3,4 @@ export const SHOW_TOAST = "SHOW_TOAST";
 export const ALL_USER_FAIL = "ALL_USER_FAIL";
 export const ALL_USER_REQUEST = "ALL_USER_REQUEST";
 export const ALL_USER_SUCCESS = "ALL_USER_SUCCESS";
+export const GET_USER = "GET_USER";

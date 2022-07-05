@@ -12,7 +12,7 @@ class ApiFeatures {
             $options: "i",
             // i -> case insensitive
           },
-        } 
+        }
       : {};
 
     // console.log(username);

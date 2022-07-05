@@ -1,54 +1,53 @@
 import React, { useEffect, useState } from "react";
 import { getUser } from "../store/actions/userAction";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useHistory, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { api } from "../helper/instance";
 
 const Userlist = () => {
   const dispatch = useDispatch();
-  const history = useHistory();
-  const params = useParams();
 
   const { users } = useSelector((state) => state.users);
 
-  const username = params.username;
-  // const email = params.email;
-  // const phone = params.phone;
-
   useEffect(() => {
-    dispatch(getUser(username));
-  }, [dispatch, username]);
-
-  console.log("userlist", users);
+    dispatch(getUser());
+  }, [dispatch]);
 
   const [text, setText] = useState("");
-  // const [userEmail, setUserEmail] = useState("");
 
   const [suggestions, setSuggestions] = useState([]);
 
   const searchTag = (username) => {
-    let matches = [];
-    if (username.length > 0) {
-      matches = users.filter((user) => {
-        // console.log("user", user);
-        const regex = new RegExp(`${username}`, "gi");
-        return user.username.match(regex);
-      });
-    }
-    console.log("matches", matches);
-    setSuggestions(matches);
     setText(username);
-    // setUserEmail(username);
+    api
+      .get(`auth/admin/search/${username}`)
+      .then((res) => {
+        console.log("res", res.data.data);
+        const data = res.data.data;
+        console.log(data);
+        setSuggestions(data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
+
   const searchSubmitHandler = (e) => {
     e.preventDefault();
+
     if (text) {
-      history.push(`/users/${text}`);
-    }
-    // if (userEmail) {
-    //   history.push(`/users/${userEmail}`);
-    // }
-    else {
-      history.push("/users");
+      console.log("text", text);
+      api
+        .get(`auth/admin/search/${text}`)
+        .then((res) => {
+          console.log("res", res.data.data);
+          const data = res.data.data;
+          console.log(data);
+          setSuggestions(data);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     }
   };
 
@@ -91,6 +90,7 @@ const Userlist = () => {
                         className="py-2.5 pl-1 w-full focus:outline-none text-sm rounded text-gray-600 placeholder-gray-500"
                         placeholder="Filter users by name, email, phone...."
                         onChange={(e) => searchTag(e.target.value)}
+                        value={text}
                       />
                     </form>
                   </div>
@@ -126,13 +126,13 @@ const Userlist = () => {
               <tbody className="w-full">
                 {text ? (
                   <>
-                    {suggestions &&
-                      suggestions.map((suggestion) => {
+                    {suggestions?.length > 0 &&
+                      suggestions?.map((item) => {
                         return (
                           <>
                             <tr
                               className="h-20 text-sm leading-none text-gray-700 border-b border-t border-gray-200 bg-white hover:bg-gray-100"
-                              key={suggestion._id}
+                              key={item._id}
                             >
                               <td className="pl-4">
                                 <img
@@ -143,31 +143,27 @@ const Userlist = () => {
                               </td>
                               <td className="pl-11">
                                 <div className="flex items-center">
-                                  {suggestion.username}
+                                  {item.username}
                                 </div>
                               </td>
                               <td>
-                                <p className="mr-16 pl-10">
-                                  {suggestion.email}
-                                </p>
+                                <p className="mr-16 pl-10">{item.email}</p>
+                              </td>
+                              <td>
+                                <p className="mr-16 pl-10">{item.phone}</p>
                               </td>
                               <td>
                                 <p className="mr-16 pl-10">
-                                  {suggestion.phone}
-                                </p>
-                              </td>
-                              <td>
-                                <p className="mr-16 pl-10">
-                                  {suggestion.signed_in_method}
+                                  {item.signed_in_method}
                                 </p>
                               </td>
                               <td>
                                 <p className="mr-16">
                                   <Link
                                     to={
-                                      "/users"
-                                        ? `/users/view/${suggestion._id}`
-                                        : `view/${suggestion._id}`
+                                      "/users/"
+                                        ? `/users/view/${item._id}`
+                                        : `view/${item._id}`
                                     }
                                   >
                                     <svg
