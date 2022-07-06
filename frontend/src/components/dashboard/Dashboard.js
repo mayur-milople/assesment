@@ -28,6 +28,9 @@ ChartJS.register(
 
 const Dashboard = () => {
   const [graphData, setGraphData] = useState({});
+  const [filterLoginData, setFilterLoginData] = useState({});
+  const [sdate, setSdate] = useState("");
+  const [edate, setEdate] = useState("");
 
   const dispatch = useDispatch();
 
@@ -42,6 +45,28 @@ const Dashboard = () => {
       .catch((error) => {
         dispatch({ type: SHOW_TOAST, payload: error.message });
       });
+  };
+
+  const body = {
+    sdate,
+    edate,
+  };
+
+  const filterLoginGraphDetail = (e) => {
+    e.preventDefault();
+
+    console.log(body);
+
+    // console.log(new Date(sdate).toISOString());
+    // api
+    //   .get("auth/admin/loginDate/filter", body)
+    //   .then((res) => {
+    //     console.log("sdate", body);
+    //     console.log("filter res", res);
+    //   })
+    //   .catch((error) => {
+    //     dispatch({ type: SHOW_TOAST, payload: error.message });
+    //   });
   };
 
   useEffect(() => {
@@ -148,10 +173,25 @@ const Dashboard = () => {
 
           <div className="mt-4">
             <span className="font-semibold mr-1">Start:</span>
-            <input type="date" name="currentDate" className="mr-8" />
+            <input
+              type="date"
+              name="sdate"
+              className="mr-8"
+              value={sdate}
+              onChange={(e) => setSdate(e.target.value)}
+            />
             <span className="font-semibold mr-1">End:</span>
-            <input type="date" className="mr-3" />
-            <button className="bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-2 px-2 border border-red-500 hover:border-transparent rounded">
+            <input
+              type="date"
+              className="mr-3"
+              name="edate"
+              value={edate}
+              onChange={(e) => setEdate(e.target.value)}
+            />
+            <button
+              className="bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-2 px-2 border border-red-500 hover:border-transparent rounded"
+              onClick={filterLoginGraphDetail}
+            >
               filter
             </button>
           </div>
