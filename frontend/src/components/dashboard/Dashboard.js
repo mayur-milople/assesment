@@ -14,7 +14,8 @@ import { Card } from "@mui/material";
 import { api } from "../helper/instance";
 import { useDispatch } from "react-redux";
 import { SHOW_TOAST } from "../store/constants/constant";
-import moment from "moment";
+import DailyRegister from "./DailyRegister";
+import DailySocialLogin from "./DailySocialLogin";
 
 ChartJS.register(
   CategoryScale,
@@ -28,7 +29,6 @@ ChartJS.register(
 
 const Dashboard = () => {
   const [graphData, setGraphData] = useState({});
-  const [filterLoginData, setFilterLoginData] = useState({});
   const [sdate, setSdate] = useState("");
   const [edate, setEdate] = useState("");
 
@@ -40,7 +40,11 @@ const Dashboard = () => {
       .then((res) => {
         console.log("res", res.data.data);
         const data = res.data.data;
-        setGraphData(data);
+        if (res.status === 200) {
+          setGraphData(data);
+          setEdate("");
+          setSdate("");
+        }
       })
       .catch((error) => {
         dispatch({ type: SHOW_TOAST, payload: error.message });
@@ -55,18 +59,18 @@ const Dashboard = () => {
   const filterLoginGraphDetail = (e) => {
     e.preventDefault();
 
-    console.log(body);
-
-    // console.log(new Date(sdate).toISOString());
-    // api
-    //   .get("auth/admin/loginDate/filter", body)
-    //   .then((res) => {
-    //     console.log("sdate", body);
-    //     console.log("filter res", res);
-    //   })
-    //   .catch((error) => {
-    //     dispatch({ type: SHOW_TOAST, payload: error.message });
-    //   });
+    api
+      .post("auth/admin/loginDate/filter", body)
+      .then((res) => {
+        console.log("filter res", res.data.data);
+        const data = res.data.data;
+        if (res.status === 201) {
+          setGraphData(data);
+        }
+      })
+      .catch((error) => {
+        dispatch({ type: SHOW_TOAST, payload: error.message });
+      });
   };
 
   useEffect(() => {
@@ -85,74 +89,27 @@ const Dashboard = () => {
       },
     },
   };
+
   const dailyLogin = {
-    labels: graphData?.total?.totalLogin?.array,
+    labels:
+      graphData?.total?.totalLogin?.array ||
+      graphData?.totalLogin?.dateRange ||
+      graphData?.totalLogin?.listDate,
+
     datasets: [
       {
         label: "Daily login",
-        data: graphData?.total?.totalLogin?.countTotalLogin,
+        data:
+          graphData?.total?.totalLogin?.countTotalLogin ||
+          graphData?.totalLogin?.userTotalRange ||
+          graphData?.totalLogin?.countTotalLogin,
         borderColor: "rgb(255, 99, 132)",
         backgroundColor: "rgba(255, 99, 132, 0.5)",
       },
     ],
   };
 
-  const dailyRegisteroptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: "top",
-      },
-      title: {
-        display: true,
-        text: "Chart.js Line Chart",
-      },
-    },
-  };
-
-  const dailyRegister = {
-    labels: graphData?.simple?.simpleRegister?.array,
-    datasets: [
-      {
-        label: "Daily simple registration",
-        data: graphData?.simple?.simpleRegister?.countRegisterSimpleArray,
-        borderColor: "rgb(53, 162, 235)",
-        backgroundColor: "rgba(53, 162, 235, 0.5)",
-      },
-      {
-        label: "Daily social registration",
-        data: graphData?.social?.socialRegister?.countRegisterSocialArray,
-        borderColor: "rgb(255, 99, 132)",
-        backgroundColor: "rgba(255, 99, 132, 0.5)",
-      },
-    ],
-  };
-  const dailySocialLoginoptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: "top",
-      },
-      title: {
-        display: true,
-        text: "Chart.js Line Chart",
-      },
-    },
-  };
-
-  const dailySocialLogin = {
-    labels: graphData?.social?.socialLogin?.array,
-    datasets: [
-      {
-        label: "Daily Social login",
-        data: graphData?.social?.socialLogin?.countLoginSocialArray,
-        borderColor: "rgb(53, 162, 235)",
-        backgroundColor: "rgba(53, 162, 235, 0.5)",
-      },
-    ],
-  };
-
-  // console.log("graphData", graphData);
+  console.log("graphData", graphData);
 
   return (
     <div className="container">
@@ -169,9 +126,13 @@ const Dashboard = () => {
             flexDirection: "column",
           }}
         >
-          <Line options={dailyLoginoptions} data={dailyLogin} />
-
           <div className="mt-4">
+            <button
+              className="bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-2 px-2 mr-3 border border-red-500 hover:border-transparent rounded"
+              onClick={getGraphDetail}
+            >
+              Reset
+            </button>
             <span className="font-semibold mr-1">Start:</span>
             <input
               type="date"
@@ -195,53 +156,13 @@ const Dashboard = () => {
               filter
             </button>
           </div>
+
+          <Line options={dailyLoginoptions} data={dailyLogin} />
         </Card>
 
-        <Card
-          variant="outlined"
-          sx={{
-            width: "90%",
-            margin: "16px",
-            padding: "10px",
-            display: "flex",
-            alignItems: "center",
-            flexDirection: "column",
-          }}
-        >
-          <Line options={dailySocialLoginoptions} data={dailySocialLogin} />
-          <div className="mt-4">
-            <span className="font-semibold mr-1">Start:</span>
-            <input type="date" className="mr-8" />
-            <span className="font-semibold mr-1">End:</span>
-            <input type="date" className="mr-3" />
-            <button className="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
-              filter
-            </button>
-          </div>
-        </Card>
+        <DailySocialLogin />
 
-        <Card
-          variant="outlined"
-          sx={{
-            width: "90%",
-            margin: "16px",
-            padding: "10px",
-            display: "flex",
-            alignItems: "center",
-            flexDirection: "column",
-          }}
-        >
-          <Line options={dailyRegisteroptions} data={dailyRegister} />
-          <div className="mt-4">
-            <span className="font-semibold mr-1">Start:</span>
-            <input type="date" name="currentDate" className="mr-8" />
-            <span className="font-semibold mr-1">End:</span>
-            <input type="date" className="mr-3" />
-            <button className="bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-2 px-2 border border-red-500 hover:border-transparent rounded">
-              filter
-            </button>
-          </div>
-        </Card>
+        <DailyRegister />
       </div>
     </div>
   );

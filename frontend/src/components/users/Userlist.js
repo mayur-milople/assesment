@@ -25,7 +25,9 @@ const Userlist = () => {
         console.log("res", res.data.data);
         const data = res.data.data;
         console.log(data);
-        setSuggestions(data);
+        if (res.status === 200) {
+          setSuggestions(data);
+        }
       })
       .catch((error) => {
         console.log(error);
@@ -43,7 +45,9 @@ const Userlist = () => {
           console.log("res", res.data.data);
           const data = res.data.data;
           console.log(data);
-          setSuggestions(data);
+          if (res.status === 200) {
+            setSuggestions(data);
+          }
         })
         .catch((error) => {
           console.log(error);

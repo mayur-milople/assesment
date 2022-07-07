@@ -31,7 +31,11 @@ router.get("/admin/user/:id", isAuthenticatedUser, getSingleUser);
 // router.delete("/admin/user/delete/:id", isAuthenticatedUser, deleteUser);
 router.get("/admin/users/info", isAuthenticatedUser, getLoginUserInfo);
 router.get("/admin/search/:key", isAuthenticatedUser, searchUserDetails);
-router.get("/admin/registerDate/filter", isAuthenticatedUser, registerDateFilter);
-router.get("/admin/loginDate/filter", isAuthenticatedUser, loginDateFilter);
+router.post(
+  "/admin/registerDate/filter",
+  isAuthenticatedUser,
+  registerDateFilter
+);
+router.post("/admin/loginDate/filter", isAuthenticatedUser, loginDateFilter);
 
 module.exports = router;

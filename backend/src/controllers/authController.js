@@ -2,10 +2,11 @@ const user = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
-const ApiFeatures = require("../utils/apifeatures");
+// const ApiFeatures = require("../utils/apifeatures");
 const loginDetail = require("../models/loginDetailsModel");
 const moment = require("moment");
 
+// register user
 exports.createUser = async (req, res) => {
   try {
     const username = req.body.username;
@@ -53,6 +54,7 @@ exports.createUser = async (req, res) => {
   }
 };
 
+// login user
 exports.loginUser = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -120,6 +122,7 @@ exports.loginUser = async (req, res) => {
   }
 };
 
+// google and facebook login
 exports.googleandfblogin = async (req, res) => {
   try {
     const { username, email, type } = req.body;
@@ -235,6 +238,7 @@ exports.googleandfblogin = async (req, res) => {
   }
 };
 
+// logout
 exports.logout = async (req, res) => {
   try {
     req.user.tokens = req.user.tokens.filter((curelement) => {
@@ -263,6 +267,7 @@ exports.logout = async (req, res) => {
   }
 };
 
+// authenticate user detail
 exports.getUserDetailsById = async (req, res) => {
   try {
     const userId = await user.findById(req.user.id);
@@ -363,19 +368,29 @@ exports.updatePassword = async (req, res) => {
 
 //   get all users
 exports.getAllUsers = async (req, res) => {
-  const apiFeature = new ApiFeatures(user.find(), req.query).search().filter();
+  // const apiFeature = new ApiFeatures(user.find(), req.query).search().filter();
 
-  let users = await apiFeature.query;
+  // let users = await apiFeature.query;
 
-  return res.status(200).json({
-    success: true,
-    status: 200,
-    data: users,
-    message: "all users found",
-  });
+  const users = await user.find();
+
+  if (users) {
+    return res.status(200).json({
+      success: true,
+      status: 200,
+      data: users,
+      message: "all users found",
+    });
+  } else {
+    return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "user not found",
+    });
+  }
 };
 
-// Get single user (admin)
+// Get single user ( by id)
 exports.getSingleUser = async (req, res) => {
   const userId = await user.findById(req.params.id);
 
@@ -397,25 +412,27 @@ exports.getSingleUser = async (req, res) => {
   }
 };
 
-// exports.deleteUser = async (req, res) => {
-//   const userId = await user.findByIdAndDelete(req.params.id);
-//   if (!userId) {
-//     res.status(400).json({
-//       success: false,
-//       status: false,
-//       message: "User does not exist with Id: ${req.params.id}",
-//     });
-//     return;
-//   } else {
-//     res.status(200).json({
-//       success: true,
-//       status: 200,
-//       message: "user deleted successfully",
-//     });
-//     return;
-//   }
-// };
+// delete user by id
+exports.deleteUser = async (req, res) => {
+  const userId = await user.findByIdAndDelete(req.params.id);
+  if (!userId) {
+    res.status(400).json({
+      success: false,
+      status: false,
+      message: "User does not exist with Id: ${req.params.id}",
+    });
+    return;
+  } else {
+    res.status(200).json({
+      success: true,
+      status: 200,
+      message: "user deleted successfully",
+    });
+    return;
+  }
+};
 
+// last 10 days login and register user count and graph
 exports.getLoginUserInfo = async (req, res) => {
   var array = [];
   var countRegisterSimpleArray = [];
@@ -563,11 +580,19 @@ exports.getLoginUserInfo = async (req, res) => {
   });
 };
 
+// serach by username,email,phone
 exports.searchUserDetails = async (req, res) => {
+  let queryStr = JSON.stringify(req.params.key);
+
+  queryStr = queryStr.replace(/^[0-9]{10}$/g, (key) => `$${key}`);
+
+  const phonesearch = JSON.parse(queryStr);
+
   const search = await user.find({
     $or: [
       { username: { $regex: req.params.key } },
       { email: { $regex: req.params.key } },
+      { phone: phonesearch },
     ],
   });
 
@@ -587,6 +612,7 @@ exports.searchUserDetails = async (req, res) => {
   }
 };
 
+// register date range filter graph
 exports.registerDateFilter = async (req, res) => {
   const sDate = new Date(req.body.sdate);
 
@@ -655,9 +681,9 @@ exports.registerDateFilter = async (req, res) => {
     var simpleRegister = { listDate, countRegisterSimpleArray };
     var socialRegister = { listDate, countRegisterSocialArray };
 
-    return res.status(200).json({
+    return res.status(201).json({
       success: true,
-      status: 200,
+      status: 201,
       data: { simpleRegister, socialRegister },
       message: "all login date filter found",
     });
@@ -715,9 +741,9 @@ exports.registerDateFilter = async (req, res) => {
     var simpleRegister = { listDate, countRegisterSimpleArray };
     var socialRegister = { listDate, countRegisterSocialArray };
 
-    return res.status(200).json({
+    return res.status(201).json({
       success: true,
-      status: 200,
+      status: 201,
       data: { simpleRegister, socialRegister },
       message: "all login date filter found",
     });
@@ -784,76 +810,22 @@ exports.registerDateFilter = async (req, res) => {
     var simpleRegister = { dateRange, userSimpleRange };
     var socialRegister = { dateRange, userSocialRange };
 
-    return res.status(200).json({
+    return res.status(201).json({
       success: true,
-      status: 200,
+      status: 201,
       data: { simpleRegister, socialRegister },
       message: "all login date filter found",
     });
   }
-
-  // var registerSimpleResult = await user.aggregate([
-  //   {
-  //     $addFields: {
-  //       registerDate: {
-  //         $dateToString: {
-  //           format: "%Y-%m-%d",
-  //           date: "$registered_at",
-  //         },
-  //       },
-  //     },
-  //   },
-  //   {
-  //     $match: {
-  //       registerDate: {
-  //         $gte: startDate,
-  //         $lte: endDate,
-  //       },
-  //       signed_in_method: "simple",
-  //     },
-  //   },
-  // ]);
-
-  // var registerResultSocial = await user.aggregate([
-  //   {
-  //     $addFields: {
-  //       registerDate: {
-  //         $dateToString: {
-  //           format: "%Y-%m-%d",
-  //           date: "$registered_at",
-  //         },
-  //       },
-  //     },
-  //   },
-  //   {
-  //     $match: {
-  //       registerDate: {
-  //         $gte: startDate,
-  //         $lte: endDate,
-  //       },
-  //       $or: [{ signed_in_method: "google" }, { signed_in_method: "facebook" }],
-  //     },
-  //   },
-  // ]);
-
-  // return res.status(200).json({
-  //   success: true,
-  //   status: 200,
-  //   data: { registerSimpleResult, registerResultSocial },
-  //   message: "all register date filter found",
-  // });
 };
 
+// login date range filter graph
 exports.loginDateFilter = async (req, res) => {
   const sDate = new Date(req.body.sdate);
-
-  console.log(sDate);
 
   const startDate = moment(sDate).format("YYYY-MM-DD");
 
   const eDate = new Date(req.body.edate);
-
-  console.log(eDate);
 
   const endDate = moment(eDate).format("YYYY-MM-DD");
 
@@ -913,9 +885,9 @@ exports.loginDateFilter = async (req, res) => {
     var totalLogin = { listDate, countTotalLogin };
     var socialLogin = { listDate, countLoginSocialArray };
 
-    return res.status(200).json({
+    return res.status(201).json({
       success: true,
-      status: 200,
+      status: 201,
       data: { totalLogin, socialLogin },
       message: "all login date filter found",
     });
@@ -970,9 +942,9 @@ exports.loginDateFilter = async (req, res) => {
     var totalLogin = { listDate, countTotalLogin };
     var socialLogin = { listDate, countLoginSocialArray };
 
-    return res.status(200).json({
+    return res.status(201).json({
       success: true,
-      status: 200,
+      status: 201,
       data: { totalLogin, socialLogin },
       message: "all login date filter found",
     });
@@ -1035,63 +1007,11 @@ exports.loginDateFilter = async (req, res) => {
     var totalLogin = { dateRange, userTotalRange };
     var socialLogin = { dateRange, userSocialRange };
 
-    return res.status(200).json({
+    return res.status(201).json({
       success: true,
-      status: 200,
+      status: 201,
       data: { totalLogin, socialLogin },
       message: "all login date filter found",
     });
   }
-
-  // var loginResult = await loginDetail.aggregate([
-  //   {
-  //     $addFields: {
-  //       loginDate: {
-  //         $dateToString: {
-  //           format: "%Y-%m-%d",
-  //           date: "$login_at",
-  //         },
-  //       },
-  //     },
-  //   },
-  //   {
-  //     $match: {
-  //       loginDate: {
-  //         $gte: startDate,
-  //         $lte: endDate,
-  //       },
-  //     },
-  //   },
-  // ]);
-
-  // console.log("loginDateResult", loginResult.length);
-
-  // var loginSocialResult = await loginDetail.aggregate([
-  //   {
-  //     $addFields: {
-  //       loginDate: {
-  //         $dateToString: {
-  //           format: "%Y-%m-%d",
-  //           date: "$login_at",
-  //         },
-  //       },
-  //     },
-  //   },
-  //   {
-  //     $match: {
-  //       loginDate: {
-  //         $gte: startDate,
-  //         $lte: endDate,
-  //       },
-  //       $or: [{ type: "google" }, { type: "facebook" }],
-  //     },
-  //   },
-  // ]);
-
-  // return res.status(200).json({
-  //   success: true,
-  //   status: 200,
-  //   data: { loginResult, loginSocialResult },
-  //   message: "all login date filter found",
-  // });
 };
