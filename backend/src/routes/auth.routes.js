@@ -14,6 +14,8 @@ const {
   searchUserDetails,
   registerDateFilter,
   loginDateFilter,
+  currentLogin,
+  dateFilterLoginUser,
 } = require("../controllers/authController");
 const { isAuthenticatedUser } = require("../middleware/auth");
 
@@ -37,5 +39,11 @@ router.post(
   registerDateFilter
 );
 router.post("/admin/loginDate/filter", isAuthenticatedUser, loginDateFilter);
+router.get("/admin/current/login", isAuthenticatedUser, currentLogin);
+router.post(
+  "/admin/users/Datefilter",
+  isAuthenticatedUser,
+  dateFilterLoginUser
+);
 
 module.exports = router;

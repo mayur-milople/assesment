@@ -3,32 +3,30 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
 } from "chart.js";
-import { Line } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 import { Card } from "@mui/material";
-import { useDispatch } from "react-redux";
-import { SHOW_TOAST } from "../store/constants/constant";
 import { api } from "../helper/instance";
+import { SHOW_TOAST } from "../store/constants/constant";
+import { useDispatch } from "react-redux";
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend
 );
 
-const DailyRegister = () => {
-  const [registerStartDate, setRegisterStartDate] = useState("");
-  const [registerEndDate, setRegisterEndDate] = useState("");
-  const [graph, setGraph] = useState({});
+const BarChart = () => {
+  const [graphData, setGraphData] = useState({});
+  const [sdate, setSdate] = useState("");
+  const [edate, setEdate] = useState("");
   const dispatch = useDispatch();
 
   const getGraphDetail = () => {
@@ -38,9 +36,9 @@ const DailyRegister = () => {
         console.log("res", res.data.data);
         const data = res.data.data;
         if (res.status === 200) {
-          setGraph(data);
-          setRegisterStartDate("");
-          setRegisterEndDate("");
+          setGraphData(data);
+          setSdate("");
+          setEdate("");
         }
       })
       .catch((error) => {
@@ -52,36 +50,25 @@ const DailyRegister = () => {
     getGraphDetail();
   }, []);
 
-  const dailyRegisteroptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: "top",
-      },
-      title: {
-        display: true,
-        text: "Chart.js Line Chart",
-      },
-    },
+  const body = {
+    sdate,
+    edate,
   };
 
-  const filterRegisterGraphDerails = (e) => {
+  const filterLoginGraphDetail = (e) => {
     e.preventDefault();
 
-    if (registerStartDate === "" && registerEndDate === "") {
+    if (body.sdate === "" && body.edate === "") {
       getGraphDetail();
     }
 
     api
-      .post("auth/admin/registerDate/filter", {
-        sdate: registerStartDate,
-        edate: registerEndDate,
-      })
+      .post("auth/admin/loginDate/filter", body)
       .then((res) => {
-        console.log("registerfilter", res.data.data);
+        console.log("filter res", res.data.data);
         const data = res.data.data;
         if (res.status === 201) {
-          setGraph(data);
+          setGraphData(data);
         }
       })
       .catch((error) => {
@@ -89,33 +76,54 @@ const DailyRegister = () => {
       });
   };
 
-  const dailyRegister = {
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+      title: {
+        display: true,
+        text: "Chart.js Bar Chart",
+      },
+    },
+  };
+
+  const data = {
     labels:
-      graph?.simple?.simpleRegister?.array ||
-      graph?.simpleRegister?.dateRange ||
-      graph?.simpleRegister?.listDate,
+      graphData?.total?.totalLogin?.array ||
+      graphData?.simpleLogin?.dateRange ||
+      graphData?.simpleLogin?.listDate,
     datasets: [
       {
-        label: "Daily simple registration",
+        label: "Daily simple login",
         data:
-          graph?.simple?.simpleRegister?.countRegisterSimpleArray ||
-          graph?.simpleRegister?.countRegisterSimpleArray ||
-          graph?.simpleRegister?.userSimpleRange,
-        borderColor: "rgb(53, 162, 235)",
-        backgroundColor: "rgba(53, 162, 235, 0.5)",
+          graphData?.simple?.simpleLogin?.countLoginSimpleArray ||
+          graphData?.simpleLogin?.countLoginSimpleArray ||
+          graphData?.simpleLogin?.userSimpleRange,
+        backgroundColor: "rgba(255, 99, 132, 0.5)",
       },
       {
-        label: "Daily social registration",
+        label: "Daily google login",
         data:
-          graph?.social?.socialRegister?.countRegisterSocialArray ||
-          graph?.socialRegister?.userSocialRange ||
-          graph?.socialRegister?.countRegisterSocialArray,
-        borderColor: "rgb(255, 99, 132)",
-        backgroundColor: "rgba(255, 99, 132, 0.5)",
+          graphData?.social?.googleLogin?.countGoogleLoginArray ||
+          graphData?.googleLogin?.countGoogleLoginArray ||
+          graphData?.socialLogin?.userGoogleRange,
+        backgroundColor: "rgba(53, 162, 235, 0.5)",
+      },
+
+      {
+        label: "Daily facebook login",
+        data:
+          graphData?.social?.facebookLogin?.countFacebookLoginArray ||
+          graphData?.facebookLogin?.countFacebookLoginArray ||
+          graphData?.socialLogin?.userFacebookRange,
+        backgroundColor: "rgba(150, 100, 150, 0.5)",
       },
     ],
   };
 
+  // console.log("barchart", graphData);
   return (
     <>
       <Card
@@ -139,30 +147,30 @@ const DailyRegister = () => {
           <span className="font-semibold mr-1">Start:</span>
           <input
             type="date"
+            name="sdate"
             className="mr-8"
-            name="registerStartDate"
-            value={registerStartDate}
-            onChange={(e) => setRegisterStartDate(e.target.value)}
+            value={sdate}
+            onChange={(e) => setSdate(e.target.value)}
           />
           <span className="font-semibold mr-1">End:</span>
           <input
             type="date"
             className="mr-3"
-            name="registerEndDate"
-            value={registerEndDate}
-            onChange={(e) => setRegisterEndDate(e.target.value)}
+            name="edate"
+            value={edate}
+            onChange={(e) => setEdate(e.target.value)}
           />
           <button
             className="bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-2 px-2 border border-red-500 hover:border-transparent rounded"
-            onClick={filterRegisterGraphDerails}
+            onClick={filterLoginGraphDetail}
           >
             filter
           </button>
         </div>
-        <Line options={dailyRegisteroptions} data={dailyRegister} />
+        <Bar options={options} data={data} />
       </Card>
     </>
   );
 };
 
-export default DailyRegister;
+export default BarChart;

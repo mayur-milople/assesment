@@ -16,6 +16,10 @@ import { useDispatch } from "react-redux";
 import { SHOW_TOAST } from "../store/constants/constant";
 import DailyRegister from "./DailyRegister";
 import DailySocialLogin from "./DailySocialLogin";
+import BarChart from "./BarChart";
+import AreaChart from "./AreaChart";
+import PieChart from "./PieChart";
+import DataTable from "./DataTable";
 
 ChartJS.register(
   CategoryScale,
@@ -58,6 +62,10 @@ const Dashboard = () => {
 
   const filterLoginGraphDetail = (e) => {
     e.preventDefault();
+
+    if (body.sdate === "" && body.edate === "") {
+      getGraphDetail();
+    }
 
     api
       .post("auth/admin/loginDate/filter", body)
@@ -163,6 +171,15 @@ const Dashboard = () => {
         <DailySocialLogin />
 
         <DailyRegister />
+
+        <AreaChart />
+
+        <BarChart />
+
+        <PieChart />
+      </div>
+      <div className="grid grid-cols-1 gap-3">
+        <DataTable />
       </div>
     </div>
   );

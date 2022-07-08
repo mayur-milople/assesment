@@ -260,7 +260,7 @@ const LoginSignup = () => {
             <div className="signUpName mb-3">
               <PhoneIcon />
               <input
-                type="number"
+                type="text"
                 placeholder="Phone"
                 required
                 name="phone"

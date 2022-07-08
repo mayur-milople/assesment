@@ -439,7 +439,10 @@ exports.getLoginUserInfo = async (req, res) => {
   var countRegisterSocialArray = [];
   var countLoginSimpleArray = [];
   var countLoginSocialArray = [];
+  var countGoogleLoginArray = [];
+  var countFacebookLoginArray = [];
   var countTotalLogin = [];
+  var countTotalRegister = [];
   var currentDate = new Date();
   for (let index = 0; index < 11; index++) {
     const date = moment(currentDate).subtract(index, "d").format("YYYY-MM-DD");
@@ -551,6 +554,67 @@ exports.getLoginUserInfo = async (req, res) => {
         },
       },
     ]);
+    var registerResult = await user.aggregate([
+      {
+        $addFields: {
+          onlyDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$registered_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          onlyDate: {
+            $eq: date,
+          },
+        },
+      },
+    ]);
+
+    var loginGoogleResult = await loginDetail.aggregate([
+      {
+        $addFields: {
+          onlyDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$login_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          onlyDate: {
+            $eq: date,
+          },
+          type: "google",
+        },
+      },
+    ]);
+
+    var loginFacebookResult = await loginDetail.aggregate([
+      {
+        $addFields: {
+          onlyDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$login_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          onlyDate: {
+            $eq: date,
+          },
+          type: "facebook",
+        },
+      },
+    ]);
     array.push(date);
 
     // console.log("register", registerResultSocial);
@@ -560,6 +624,9 @@ exports.getLoginUserInfo = async (req, res) => {
     countLoginSimpleArray.push(loginSimpleResult.length);
     countLoginSocialArray.push(loginSocialResult.length);
     countTotalLogin.push(loginResult.length);
+    countTotalRegister.push(registerResult.length);
+    countGoogleLoginArray.push(loginGoogleResult.length);
+    countFacebookLoginArray.push(loginFacebookResult.length);
   }
 
   var simpleRegister = { array, countRegisterSimpleArray };
@@ -567,14 +634,17 @@ exports.getLoginUserInfo = async (req, res) => {
   var simpleLogin = { array, countLoginSimpleArray };
   var socialLogin = { array, countLoginSocialArray };
   var totalLogin = { array, countTotalLogin };
+  var totalRegister = { array, countTotalRegister };
+  var googleLogin = { array, countGoogleLoginArray };
+  var facebookLogin = { array, countFacebookLoginArray };
 
   return res.status(200).json({
     success: true,
     status: 200,
     data: {
       simple: { simpleRegister, simpleLogin },
-      social: { socialRegister, socialLogin },
-      total: { totalLogin },
+      social: { socialRegister, socialLogin, googleLogin, facebookLogin },
+      total: { totalLogin, totalRegister },
     },
     message: "request success",
   });
@@ -582,17 +652,11 @@ exports.getLoginUserInfo = async (req, res) => {
 
 // serach by username,email,phone
 exports.searchUserDetails = async (req, res) => {
-  let queryStr = JSON.stringify(req.params.key);
-
-  queryStr = queryStr.replace(/^[0-9]{10}$/g, (key) => `$${key}`);
-
-  const phonesearch = JSON.parse(queryStr);
-
   const search = await user.find({
     $or: [
-      { username: { $regex: req.params.key } },
+      { username: { $regex: req.params.key, $options: "i" } },
       { email: { $regex: req.params.key } },
-      { phone: phonesearch },
+      { phone: { $regex: req.params.key } },
     ],
   });
 
@@ -625,6 +689,7 @@ exports.registerDateFilter = async (req, res) => {
   var listDate = [];
   var countRegisterSimpleArray = [];
   var countRegisterSocialArray = [];
+  var countTotalRegister = [];
   const currentDate = moment().format("YYYY-MM-DD");
 
   if (startDate === endDate) {
@@ -675,16 +740,38 @@ exports.registerDateFilter = async (req, res) => {
       },
     ]);
 
+    var registerResult = await user.aggregate([
+      {
+        $addFields: {
+          registerDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$registered_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          registerDate: {
+            $eq: startDate,
+          },
+        },
+      },
+    ]);
+
     countRegisterSimpleArray.push(registerSimpleResult.length);
     countRegisterSocialArray.push(registerResultSocial.length);
+    countTotalRegister.push(registerResult.length);
 
     var simpleRegister = { listDate, countRegisterSimpleArray };
     var socialRegister = { listDate, countRegisterSocialArray };
+    var total = { listDate, countTotalRegister };
 
     return res.status(201).json({
       success: true,
       status: 201,
-      data: { simpleRegister, socialRegister },
+      data: { simpleRegister, socialRegister, total },
       message: "all login date filter found",
     });
   } else if (startDate === currentDate) {
@@ -735,16 +822,38 @@ exports.registerDateFilter = async (req, res) => {
         },
       },
     ]);
+
+    var registerResult = await user.aggregate([
+      {
+        $addFields: {
+          registerDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$registered_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          registerDate: {
+            $eq: startDate,
+          },
+        },
+      },
+    ]);
     countRegisterSimpleArray.push(registerSimpleResult.length);
     countRegisterSocialArray.push(registerResultSocial.length);
+    countTotalRegister.push(registerResult.length);
 
     var simpleRegister = { listDate, countRegisterSimpleArray };
     var socialRegister = { listDate, countRegisterSocialArray };
+    var total = { listDate, countTotalRegister };
 
     return res.status(201).json({
       success: true,
       status: 201,
-      data: { simpleRegister, socialRegister },
+      data: { simpleRegister, socialRegister, total },
       message: "all login date filter found",
     });
   } else {
@@ -799,21 +908,44 @@ exports.registerDateFilter = async (req, res) => {
         },
       ]);
 
+      var registerResult = await user.aggregate([
+        {
+          $addFields: {
+            registerDate: {
+              $dateToString: {
+                format: "%Y-%m-%d",
+                date: "$registered_at",
+              },
+            },
+          },
+        },
+        {
+          $match: {
+            registerDate: {
+              $eq: datefilter,
+            },
+          },
+        },
+      ]);
+
       countRegisterSimpleArray.push(registerSimpleResult.length);
       countRegisterSocialArray.push(registerResultSocial.length);
+      countTotalRegister.push(registerResult.length);
     }
 
     const dateRange = listDate.reverse();
     const userSimpleRange = countRegisterSimpleArray.reverse();
     const userSocialRange = countRegisterSocialArray.reverse();
+    const userTotalRange = countTotalRegister.reverse();
 
     var simpleRegister = { dateRange, userSimpleRange };
     var socialRegister = { dateRange, userSocialRange };
+    var totalRegister = { dateRange, userTotalRange };
 
     return res.status(201).json({
       success: true,
       status: 201,
-      data: { simpleRegister, socialRegister },
+      data: { simpleRegister, socialRegister, totalRegister },
       message: "all login date filter found",
     });
   }
@@ -832,6 +964,9 @@ exports.loginDateFilter = async (req, res) => {
   var listDate = [];
   var countTotalLogin = [];
   var countLoginSocialArray = [];
+  var countLoginSimpleArray = [];
+  var countFacebookLoginArray = [];
+  var countGoogleLoginArray = [];
 
   const currentDate = moment().format("YYYY-MM-DD");
 
@@ -879,16 +1014,91 @@ exports.loginDateFilter = async (req, res) => {
       },
     ]);
 
+    var loginSimpleDateResult = await loginDetail.aggregate([
+      {
+        $addFields: {
+          loginDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$login_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          loginDate: {
+            $eq: startDate,
+          },
+          type: "simple",
+        },
+      },
+    ]);
+
+    var loginGoogleDateResult = await loginDetail.aggregate([
+      {
+        $addFields: {
+          loginDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$login_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          loginDate: {
+            $eq: startDate,
+          },
+          type: "google",
+        },
+      },
+    ]);
+
+    var loginFacebookDateResult = await loginDetail.aggregate([
+      {
+        $addFields: {
+          loginDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$login_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          loginDate: {
+            $eq: startDate,
+          },
+          type: "facebook",
+        },
+      },
+    ]);
+
     countTotalLogin.push(loginDateResult.length);
     countLoginSocialArray.push(loginSocialDateResult.length);
+    countGoogleLoginArray.push(loginGoogleDateResult.length);
+    countFacebookLoginArray.push(loginFacebookDateResult.length);
+    countLoginSimpleArray.push(loginSimpleDateResult.length);
 
     var totalLogin = { listDate, countTotalLogin };
     var socialLogin = { listDate, countLoginSocialArray };
+    var googleLogin = { listDate, countGoogleLoginArray };
+    var facebookLogin = { listDate, countFacebookLoginArray };
+    var simpleLogin = { listDate, countLoginSimpleArray };
 
     return res.status(201).json({
       success: true,
       status: 201,
-      data: { totalLogin, socialLogin },
+      data: {
+        totalLogin,
+        socialLogin,
+        googleLogin,
+        facebookLogin,
+        simpleLogin,
+      },
       message: "all login date filter found",
     });
   } else if (startDate === currentDate) {
@@ -936,16 +1146,91 @@ exports.loginDateFilter = async (req, res) => {
       },
     ]);
 
+    var loginSimpleDateResult = await loginDetail.aggregate([
+      {
+        $addFields: {
+          loginDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$login_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          loginDate: {
+            $eq: startDate,
+          },
+          type: "simple",
+        },
+      },
+    ]);
+
+    var loginGoogleDateResult = await loginDetail.aggregate([
+      {
+        $addFields: {
+          loginDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$login_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          loginDate: {
+            $eq: startDate,
+          },
+          type: "google",
+        },
+      },
+    ]);
+
+    var loginFacebookDateResult = await loginDetail.aggregate([
+      {
+        $addFields: {
+          loginDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$login_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          loginDate: {
+            $eq: startDate,
+          },
+          type: "facebook",
+        },
+      },
+    ]);
+
     countTotalLogin.push(loginDateResult.length);
     countLoginSocialArray.push(loginSocialDateResult.length);
+    countGoogleLoginArray.push(loginGoogleDateResult.length);
+    countFacebookLoginArray.push(loginFacebookDateResult.length);
+    countLoginSimpleArray.push(loginSimpleDateResult.length);
 
     var totalLogin = { listDate, countTotalLogin };
     var socialLogin = { listDate, countLoginSocialArray };
+    var googleLogin = { listDate, countGoogleLoginArray };
+    var facebookLogin = { listDate, countFacebookLoginArray };
+    var simpleLogin = { listDate, countLoginSimpleArray };
 
     return res.status(201).json({
       success: true,
       status: 201,
-      data: { totalLogin, socialLogin },
+      data: {
+        totalLogin,
+        socialLogin,
+        googleLogin,
+        facebookLogin,
+        simpleLogin,
+      },
       message: "all login date filter found",
     });
   } else {
@@ -996,21 +1281,472 @@ exports.loginDateFilter = async (req, res) => {
         },
       ]);
 
+      var loginSimpleDateResult = await loginDetail.aggregate([
+        {
+          $addFields: {
+            loginDate: {
+              $dateToString: {
+                format: "%Y-%m-%d",
+                date: "$login_at",
+              },
+            },
+          },
+        },
+        {
+          $match: {
+            loginDate: {
+              $eq: datefilter,
+            },
+            type: "simple",
+          },
+        },
+      ]);
+
+      var loginGoogleDateResult = await loginDetail.aggregate([
+        {
+          $addFields: {
+            loginDate: {
+              $dateToString: {
+                format: "%Y-%m-%d",
+                date: "$login_at",
+              },
+            },
+          },
+        },
+        {
+          $match: {
+            loginDate: {
+              $eq: datefilter,
+            },
+            type: "google",
+          },
+        },
+      ]);
+
+      var loginFacebookDateResult = await loginDetail.aggregate([
+        {
+          $addFields: {
+            loginDate: {
+              $dateToString: {
+                format: "%Y-%m-%d",
+                date: "$login_at",
+              },
+            },
+          },
+        },
+        {
+          $match: {
+            loginDate: {
+              $eq: datefilter,
+            },
+            type: "facebook",
+          },
+        },
+      ]);
+
       countTotalLogin.push(loginDateResult.length);
       countLoginSocialArray.push(loginSocialDateResult.length);
+      countGoogleLoginArray.push(loginGoogleDateResult.length);
+      countFacebookLoginArray.push(loginFacebookDateResult.length);
+      countLoginSimpleArray.push(loginSimpleDateResult.length);
     }
 
     const dateRange = listDate.reverse();
     const userTotalRange = countTotalLogin.reverse();
     const userSocialRange = countLoginSocialArray.reverse();
+    const userGoogleRange = countGoogleLoginArray.reverse();
+    const userFacebookRange = countFacebookLoginArray.reverse();
+    const userSimpleRange = countLoginSimpleArray.reverse();
 
     var totalLogin = { dateRange, userTotalRange };
-    var socialLogin = { dateRange, userSocialRange };
+    var socialLogin = {
+      dateRange,
+      userSocialRange,
+      userFacebookRange,
+      userGoogleRange,
+    };
+    var simpleLogin = { dateRange, userSimpleRange };
 
     return res.status(201).json({
       success: true,
       status: 201,
-      data: { totalLogin, socialLogin },
+      data: { totalLogin, socialLogin, simpleLogin },
+      message: "all login date filter found",
+    });
+  }
+};
+
+// current day login by facebook,google,simple
+exports.currentLogin = async (req, res) => {
+  const currentDate = moment().format("YYYY-MM-DD");
+
+  var currentFacebookLogin = await loginDetail.aggregate([
+    {
+      $addFields: {
+        onlyDate: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$login_at",
+          },
+        },
+      },
+    },
+    {
+      $match: {
+        onlyDate: {
+          $eq: currentDate,
+        },
+        type: "facebook",
+      },
+    },
+  ]);
+
+  var currentGoogleLogin = await loginDetail.aggregate([
+    {
+      $addFields: {
+        onlyDate: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$login_at",
+          },
+        },
+      },
+    },
+    {
+      $match: {
+        onlyDate: {
+          $eq: currentDate,
+        },
+        type: "google",
+      },
+    },
+  ]);
+  var currentSimpleLogin = await loginDetail.aggregate([
+    {
+      $addFields: {
+        onlyDate: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$login_at",
+          },
+        },
+      },
+    },
+    {
+      $match: {
+        onlyDate: {
+          $eq: currentDate,
+        },
+        type: "simple",
+      },
+    },
+  ]);
+
+  var array = ["facebook", "google", "simple"];
+
+  var countArray = [
+    currentFacebookLogin.length,
+    currentGoogleLogin.length,
+    currentSimpleLogin.length,
+  ];
+
+  var currentDateLogin = { array, countArray };
+
+  return res.status(200).json({
+    success: true,
+    status: 200,
+    data: currentDateLogin,
+    message: "current date login data success",
+  });
+};
+
+// login date range  filter and type fb,google,simple graph
+exports.dateFilterLoginUser = async (req, res) => {
+  const sDate = new Date(req.body.sdate);
+
+  const startDate = moment(sDate).format("YYYY-MM-DD");
+
+  const eDate = new Date(req.body.edate);
+
+  const endDate = moment(eDate).format("YYYY-MM-DD");
+
+  const currentDate = moment().format("YYYY-MM-DD");
+
+  var listDate = [];
+  var countFacebookLoginArray = [];
+  var countGoogleLoginArray = [];
+  var countLoginSimpleArray = [];
+
+  if (startDate === endDate) {
+    listDate.push(startDate);
+    var loginSimpleDateResult = await loginDetail.aggregate([
+      {
+        $addFields: {
+          loginDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$login_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          loginDate: {
+            $eq: startDate,
+          },
+          type: "simple",
+        },
+      },
+    ]);
+
+    var loginGoogleDateResult = await loginDetail.aggregate([
+      {
+        $addFields: {
+          loginDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$login_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          loginDate: {
+            $eq: startDate,
+          },
+          type: "google",
+        },
+      },
+    ]);
+
+    var loginFacebookDateResult = await loginDetail.aggregate([
+      {
+        $addFields: {
+          loginDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$login_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          loginDate: {
+            $eq: startDate,
+          },
+          type: "facebook",
+        },
+      },
+    ]);
+    var countArray = [
+      loginFacebookDateResult.length,
+      loginGoogleDateResult.length,
+      loginSimpleDateResult.length,
+    ];
+
+    var array = ["facebook", "google", "simple"];
+
+    var countLogin = { array, countArray };
+
+    return res.status(201).json({
+      success: true,
+      status: 201,
+      data: countLogin,
+      message: "all login date filter found",
+    });
+  } else if (startDate === currentDate) {
+    endDate === currentDate;
+    listDate.push(startDate);
+    var loginSimpleDateResult = await loginDetail.aggregate([
+      {
+        $addFields: {
+          loginDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$login_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          loginDate: {
+            $eq: startDate,
+          },
+          type: "simple",
+        },
+      },
+    ]);
+
+    var loginGoogleDateResult = await loginDetail.aggregate([
+      {
+        $addFields: {
+          loginDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$login_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          loginDate: {
+            $eq: startDate,
+          },
+          type: "google",
+        },
+      },
+    ]);
+
+    var loginFacebookDateResult = await loginDetail.aggregate([
+      {
+        $addFields: {
+          loginDate: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$login_at",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          loginDate: {
+            $eq: startDate,
+          },
+          type: "facebook",
+        },
+      },
+    ]);
+
+    var countArray = [
+      loginFacebookDateResult.length,
+      loginGoogleDateResult.length,
+      loginSimpleDateResult.length,
+    ];
+
+    var array = ["facebook", "google", "simple"];
+
+    var countLogin = { array, countArray };
+
+    return res.status(201).json({
+      success: true,
+      status: 201,
+      data: countLogin,
+      message: "all login date filter found",
+    });
+  } else {
+    while (req.body.sdate < req.body.edate) {
+      req.body.sdate = sDate.toISOString().slice(0, 10);
+      var datefilter = req.body.sdate;
+      listDate.push(datefilter);
+      sDate.setDate(sDate.getDate() + 1);
+
+      var loginSimpleDateResult = await loginDetail.aggregate([
+        {
+          $addFields: {
+            loginDate: {
+              $dateToString: {
+                format: "%Y-%m-%d",
+                date: "$login_at",
+              },
+            },
+          },
+        },
+        {
+          $match: {
+            loginDate: {
+              $eq: datefilter,
+            },
+            type: "simple",
+          },
+        },
+      ]);
+
+      var loginGoogleDateResult = await loginDetail.aggregate([
+        {
+          $addFields: {
+            loginDate: {
+              $dateToString: {
+                format: "%Y-%m-%d",
+                date: "$login_at",
+              },
+            },
+          },
+        },
+        {
+          $match: {
+            loginDate: {
+              $eq: datefilter,
+            },
+            type: "google",
+          },
+        },
+      ]);
+
+      var loginFacebookDateResult = await loginDetail.aggregate([
+        {
+          $addFields: {
+            loginDate: {
+              $dateToString: {
+                format: "%Y-%m-%d",
+                date: "$login_at",
+              },
+            },
+          },
+        },
+        {
+          $match: {
+            loginDate: {
+              $eq: datefilter,
+            },
+            type: "facebook",
+          },
+        },
+      ]);
+
+      countFacebookLoginArray.push(loginFacebookDateResult.length);
+      countGoogleLoginArray.push(loginGoogleDateResult.length);
+      countLoginSimpleArray.push(loginSimpleDateResult.length);
+    }
+
+    var array = ["facebook", "google", "simple"];
+
+    var userGoogleRange = countGoogleLoginArray.reverse();
+    var userFacebookRange = countFacebookLoginArray.reverse();
+    var userSimpleRange = countLoginSimpleArray.reverse();
+
+    var googleSum = 0;
+    var simpleSum = 0;
+    var facebookSum = 0;
+
+    for (let index = 0; index < userGoogleRange.length; index++) {
+      googleSum += userGoogleRange[index];
+    }
+
+    for (let i = 0; i < userFacebookRange.length; i++) {
+      facebookSum += userFacebookRange[i];
+    }
+
+    for (let index = 0; index < userSimpleRange.length; index++) {
+      simpleSum += userSimpleRange[index];
+    }
+
+    var countArray = [facebookSum, googleSum, simpleSum];
+
+    var countLogin = {
+      array,
+      countArray,
+    };
+
+    return res.status(201).json({
+      success: true,
+      status: 201,
+      data: countLogin,
       message: "all login date filter found",
     });
   }

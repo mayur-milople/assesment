@@ -7,6 +7,7 @@ import {
   LineElement,
   Title,
   Tooltip,
+  Filler,
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
@@ -22,13 +23,14 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
+  Filler,
   Legend
 );
 
-const DailySocialLogin = () => {
+const AreaChart = () => {
   const [graphData, setGraphData] = useState({});
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [sdate, setSdate] = useState("");
+  const [edate, setEdate] = useState("");
 
   const dispatch = useDispatch();
 
@@ -40,8 +42,8 @@ const DailySocialLogin = () => {
         const data = res.data.data;
         if (res.status === 200) {
           setGraphData(data);
-          setStartDate("");
-          setEndDate("");
+          setEdate("");
+          setSdate("");
         }
       })
       .catch((error) => {
@@ -49,18 +51,20 @@ const DailySocialLogin = () => {
       });
   };
 
-  useEffect(() => {
-    getGraphDetail();
-  }, []);
-  const filtersocialLoginGraphDetails = (e) => {
+  const body = {
+    sdate,
+    edate,
+  };
+
+  const filterLoginGraphDetail = (e) => {
     e.preventDefault();
 
-    if (startDate === "" && endDate === "") {
+    if (body.sdate === "" && body.edate === "") {
       getGraphDetail();
     }
 
     api
-      .post("auth/admin/loginDate/filter", { sdate: startDate, edate: endDate })
+      .post("auth/admin/registerDate/filter", body)
       .then((res) => {
         console.log("filter res", res.data.data);
         const data = res.data.data;
@@ -73,7 +77,11 @@ const DailySocialLogin = () => {
       });
   };
 
-  const dailySocialLoginoptions = {
+  useEffect(() => {
+    getGraphDetail();
+  }, []);
+
+  const options = {
     responsive: true,
     plugins: {
       legend: {
@@ -86,18 +94,20 @@ const DailySocialLogin = () => {
     },
   };
 
-  const dailySocialLogin = {
+  const data = {
     labels:
-      graphData?.social?.socialLogin?.array ||
-      graphData?.socialLogin?.dateRange ||
-      graphData?.socialLogin?.listDate,
+      graphData?.total?.totalRegister?.array ||
+      graphData?.totalRegister?.dateRange ||
+      graphData?.totalRegister?.listDate,
+
     datasets: [
       {
-        label: "Daily Social login",
+        fill: true,
+        label: "Daily Register",
         data:
-          graphData?.social?.socialLogin?.countLoginSocialArray ||
-          graphData?.socialLogin?.userSocialRange ||
-          graphData?.socialLogin?.countLoginSocialArray,
+          graphData?.total?.totalRegister?.countTotalRegister ||
+          graphData?.totalRegister?.userTotalRange ||
+          graphData?.totalRegister?.countTotalRegister,
         borderColor: "rgb(53, 162, 235)",
         backgroundColor: "rgba(53, 162, 235, 0.5)",
       },
@@ -126,30 +136,31 @@ const DailySocialLogin = () => {
           <span className="font-semibold mr-1">Start:</span>
           <input
             type="date"
-            name="startDate"
+            name="sdate"
             className="mr-8"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            value={sdate}
+            onChange={(e) => setSdate(e.target.value)}
           />
           <span className="font-semibold mr-1">End:</span>
           <input
             type="date"
             className="mr-3"
-            name="endDate"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
+            name="edate"
+            value={edate}
+            onChange={(e) => setEdate(e.target.value)}
           />
           <button
             className="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
-            onClick={filtersocialLoginGraphDetails}
+            onClick={filterLoginGraphDetail}
           >
             filter
           </button>
         </div>
-        <Line options={dailySocialLoginoptions} data={dailySocialLogin} />
+
+        <Line options={options} data={data} />
       </Card>
     </>
   );
 };
 
-export default DailySocialLogin;
+export default AreaChart;
