@@ -18,6 +18,10 @@ const userSchema = new mongoose.Schema({
     type: String,
   },
 
+  image: {
+    type: Array,
+  },
+
   registered_at: {
     type: Date,
     default: Date.now,

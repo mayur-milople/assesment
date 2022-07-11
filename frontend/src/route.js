@@ -9,6 +9,7 @@ import Navigation from "./components/layout/Navigation";
 import profile from "./components/users/profile";
 import User from "./components/users/User";
 import Dashboard from "./components/dashboard/Dashboard";
+import UpdateProfile from "./components/users/UpdateProfile";
 
 const BaseRoute = () => {
   const ProtectedRoute = (props) => {
@@ -39,6 +40,11 @@ const BaseRoute = () => {
 
                 <ProtectedRoute exact path="/profile" component={profile} />
                 <ProtectedRoute exact path="/dashboard" component={Dashboard} />
+                <ProtectedRoute
+                  exact
+                  path="/user/edit/:id"
+                  component={UpdateProfile}
+                />
               </div>
             </div>
           </div>

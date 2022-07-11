@@ -26,7 +26,7 @@ router.post("/admin/login", loginUser);
 router.post("/admin/googlefblogin", googleandfblogin);
 router.get("/admin/logout", isAuthenticatedUser, logout);
 router.get("/admin/user", isAuthenticatedUser, getUserDetailsById);
-router.put("/admin/user/update", isAuthenticatedUser, updateUserProfile);
+router.put("/admin/user/update/:id", isAuthenticatedUser, updateUserProfile);
 router.put("/admin/password/update", isAuthenticatedUser, updatePassword);
 router.get("/admin/users", isAuthenticatedUser, getAllUsers);
 router.get("/admin/user/:id", isAuthenticatedUser, getSingleUser);

@@ -37,23 +37,47 @@ const User = () => {
     <>
       <div className="container py-10  md:w-4/5 w-11/12 px-6">
         <div className="w-full">
-          <div className="py-4 md:py-7">
-            <div className="lg:flex items-center justify-between">
-              <div>
-                <h1 style={{ fontWeight: "700" }}>Email:</h1>
-                <p>{user.email}</p>
-              </div>
-              <div>
-                <h1 style={{ fontWeight: "700" }}>Username:</h1>
-                <p>{user.username}</p>
-              </div>
-              <div>
-                <h1 style={{ fontWeight: "700" }}>Phone:</h1>
-                <p>{user.phone}</p>
-              </div>
-              <div>
-                <h1 style={{ fontWeight: "700" }}>SignIn:</h1>
-                <p>{user.signed_in_method}</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="py-4 md:py-7">
+              {user?.image?.length > 0 ? (
+                <div className="flex justify-center">
+                  <img
+                    src={user?.image[0]}
+                    alt="profileimage"
+                    className="rounded-full w-64 h-full"
+                  />
+                </div>
+              ) : (
+                ""
+              )}
+            </div>
+
+            <div className="py-4 md:py-7">
+              <div className="items-center justify-between">
+                <div>
+                  <h1 style={{ fontWeight: "700", fontSize: "17px" }}>
+                    Email:
+                  </h1>
+                  <p style={{ fontSize: "17px" }}>{user.email}</p>
+                </div>
+                <div>
+                  <h1 style={{ fontWeight: "700", fontSize: "17px" }}>
+                    Username:
+                  </h1>
+                  <p style={{ fontSize: "17px" }}>{user.username}</p>
+                </div>
+                <div>
+                  <h1 style={{ fontWeight: "700", fontSize: "17px" }}>
+                    Phone:
+                  </h1>
+                  <p style={{ fontSize: "17px" }}>{user.phone}</p>
+                </div>
+                <div>
+                  <h1 style={{ fontWeight: "700", fontSize: "17px" }}>
+                    SignIn:
+                  </h1>
+                  <p style={{ fontSize: "17px" }}>{user.signed_in_method}</p>
+                </div>
               </div>
             </div>
           </div>

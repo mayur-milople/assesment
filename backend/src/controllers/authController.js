@@ -5,15 +5,45 @@ const ObjectId = mongoose.Types.ObjectId;
 // const ApiFeatures = require("../utils/apifeatures");
 const loginDetail = require("../models/loginDetailsModel");
 const moment = require("moment");
+const { saveBase64File, UsersProfile } = require("../utils/fileHelper");
 
 // register user
 exports.createUser = async (req, res) => {
   try {
+    let imagePath = [];
+
+    if (req.body.image != [] || req.body.image != undefined) {
+      for (const val of req.body.image) {
+        let filePath = await saveBase64File(val);
+
+        let fileName = filePath.split("/")[filePath.split("/").length - 1];
+        let res = await UsersProfile(filePath, fileName);
+        if (res.success) {
+          imagePath.push(res.path);
+        } else {
+          res.status(500).json({
+            success: false,
+            status: 500,
+            message: "somethingWentWrongWhileUploadingImage",
+          });
+          return;
+        }
+      }
+    } else {
+      res.status(400).json({
+        success: false,
+        status: 400,
+        message: "invalidImageFormat",
+      });
+      return;
+    }
+
     const username = req.body.username;
     const email = req.body.email;
     const password = req.body.password;
     const phone = req.body.phone;
     const signed_in_method = req.body.signed_in_method;
+    const image = imagePath;
 
     let adminData = await user.find({ username });
 
@@ -30,6 +60,7 @@ exports.createUser = async (req, res) => {
         password,
         phone,
         signed_in_method,
+        image,
       });
 
       userData.password = userData.generateHash(password);
@@ -125,9 +156,9 @@ exports.loginUser = async (req, res) => {
 // google and facebook login
 exports.googleandfblogin = async (req, res) => {
   try {
-    const { username, email, type } = req.body;
+    const { username, email, image, type } = req.body;
 
-    if (!username || !type || !email) {
+    if (!username || !type || !email || !image) {
       return res.status(422).json({
         success: false,
         status: 422,
@@ -137,6 +168,7 @@ exports.googleandfblogin = async (req, res) => {
       const login = await user.findOne({
         username,
         email,
+        image,
         signed_in_method: type,
       });
 
@@ -146,6 +178,7 @@ exports.googleandfblogin = async (req, res) => {
         const userData = new user({
           username,
           email,
+          image,
           //   email:username,
           // password:username,
           signed_in_method: type,
@@ -298,14 +331,49 @@ exports.getUserDetailsById = async (req, res) => {
 // update user profile
 
 exports.updateUserProfile = async (req, res) => {
+  let imagePath = [];
+
+  if (req.body.image != undefined || req.body.image != "") {
+    try {
+      for (const val of req.body.image) {
+        if (!val.includes("http")) {
+          let filePath = await saveBase64File(val);
+
+          let fileName = filePath.split("/")[filePath.split("/").length - 1];
+          let res = await UsersProfile(filePath, fileName);
+          if (res.success) {
+            imagePath.push(res.path);
+          } else {
+            res.status(500).json({
+              success: false,
+              status: 500,
+              message: "somethingWentWrongWhileUploadingImage",
+            });
+            return;
+          }
+        } else {
+          imagePath.push(val);
+        }
+      }
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        status: 400,
+        message: "invalidImageFormat",
+      });
+      return;
+    }
+  }
+
   await user
     .findOneAndUpdate(
-      { _id: new ObjectId(req.user._id) },
+      { _id: new ObjectId(req.params.id) },
       {
         $set: {
           username: req.body.username,
           email: req.body.email,
           phone: req.body.phone,
+          image: imagePath,
         },
       }
     )

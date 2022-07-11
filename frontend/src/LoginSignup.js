@@ -13,6 +13,7 @@ import { SHOW_TOAST } from "./components/store/constants/constant";
 import FacebookLogin from "react-facebook-login";
 import { FacebookLoginButton } from "react-social-login-buttons";
 import { GoogleLogin } from "react-google-login";
+import RendorCropImage from "./components/crop/RendorCropImage";
 
 const LoginSignup = () => {
   const dispatch = useDispatch();
@@ -29,7 +30,9 @@ const LoginSignup = () => {
     email: "",
     phone: "",
     password: "",
+    image: [],
   });
+  const [imgArray, setImgArray] = useState([]);
 
   const signupData = (e) => {
     const { value, name } = e.target;
@@ -41,6 +44,19 @@ const LoginSignup = () => {
       };
     });
   };
+
+  useEffect(() => {
+    imgArray?.map((x, y) => {
+      console.log(x);
+      let reader = new FileReader();
+      reader.readAsDataURL(x.originFileObj);
+      reader.onload = () => {
+        user.image[y] = reader.result;
+        // console.log(reader.result);
+        setUser({ ...user, image: user.image });
+      };
+    });
+  }, [imgArray]);
 
   const switchTabs = (tab, e) => {
     if (tab) {
@@ -125,6 +141,7 @@ const LoginSignup = () => {
       .post("auth/admin/googlefblogin", {
         username: response.googleId,
         email: response.profileObj.email,
+        image: response.profileObj.imageUrl,
         type: "google",
       })
       .then((res) => {
@@ -151,12 +168,14 @@ const LoginSignup = () => {
       .post("auth/admin/googlefblogin", {
         username: response.userID,
         email: response.email,
+        image: response.picture.data.url,
         type: "facebook",
       })
       .then((res) => {
         console.log(res);
         if (res?.status === 200) {
-          cookies.set("access_token", res?.data.token);
+          console.log("res fb login", res.data.token);
+          cookies.set("access_token", res?.data?.token);
           dispatch(setIsAuth(true));
           history.push("/users");
           // window.location.reload();
@@ -235,6 +254,9 @@ const LoginSignup = () => {
             ref={registerTab}
             onSubmit={registerSubmit}
           >
+            <div className="mt-12 mb-3">
+              <RendorCropImage getImageArray={setImgArray} imgArray={[]} />
+            </div>
             <div className="signUpName mb-3">
               <FaceIcon />
               <input

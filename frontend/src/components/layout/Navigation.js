@@ -42,7 +42,10 @@ const Navigation = () => {
                   {profile ? (
                     <ul className="p-2 w-full border-r bg-black absolute rounded left-0 shadow mt-12 sm:mt-16 ">
                       <li className="flex w-full justify-between text-white hover:text-indigo-700 cursor-pointer items-center">
-                        <Link to="/profile">
+                        <Link
+                          to="/profile"
+                          style={{ color: "white", textDecoration: "none" }}
+                        >
                           <div className="flex items-center">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -98,7 +101,7 @@ const Navigation = () => {
                     <div className="w-2 h-2 rounded-full bg-green-400 border border-white absolute inset-0 mb-0 mr-0 m-auto" />
                   </div>
                 </div>
-                <p className="text-white text-sm mx-3">Jane Doe</p>
+                <p className="text-white text-sm mx-3 mb-0">Jane Doe</p>
                 <div className="cursor-pointer text-white">
                   <svg
                     aria-haspopup="true"

@@ -32,7 +32,7 @@ const Sidebar = () => {
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
               </div>
-              <Link to="/dashboard">
+              <Link to="/dashboard" style={{ color: "white" }}>
                 <span className="ml-2">Dashboard</span>
               </Link>
             </div>
@@ -59,7 +59,7 @@ const Sidebar = () => {
                 <path stroke="none" d="M0 0h24v24H0z" />
                 <polyline points="6 9 12 15 18 9" />
               </svg>
-              <Link to="/users">
+              <Link to="/users" style={{ color: "white" }}>
                 <span className="ml-2">Users</span>
               </Link>
             </div>
@@ -99,7 +99,9 @@ const Sidebar = () => {
             {isTrainer ? (
               <ul className="p-6">
                 <li>
-                  <Link to="/profile">Trainer view</Link>
+                  <Link to="/profile" style={{ color: "white" }}>
+                    Trainer view
+                  </Link>
                 </li>
               </ul>
             ) : (
