@@ -168,7 +168,6 @@ exports.googleandfblogin = async (req, res) => {
       const login = await user.findOne({
         username,
         email,
-        image,
         signed_in_method: type,
       });
 
@@ -179,8 +178,6 @@ exports.googleandfblogin = async (req, res) => {
           username,
           email,
           image,
-          //   email:username,
-          // password:username,
           signed_in_method: type,
         });
 
