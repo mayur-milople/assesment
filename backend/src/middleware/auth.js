@@ -5,7 +5,7 @@ const ObjectId = mongoose.Types.ObjectId;
 
 exports.isAuthenticatedUser = async (req, res, next) => {
   try {
-    const token = req.header("Authorization") || req.cookies.jwt;
+    const token = req.header("Authorization");
 
     if (!token) {
       return res.status(403).json({
